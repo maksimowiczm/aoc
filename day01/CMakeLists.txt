@@ -1,6 +1,7 @@
 add_library(
     day01
-    lib.c
+    part1.c
+    part2.c
 )
 
 target_include_directories(day01 PUBLIC include)

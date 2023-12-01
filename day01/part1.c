@@ -26,7 +26,7 @@ static size_t parse_and_add(const char *input, Digit *digit, uint64_t *sum) {
   return 0;
 }
 
-uint64_t day01_result(const char *input, size_t n) {
+uint64_t day01_result_01(const char *input, size_t n) {
   uint64_t sum = 0;
   Digit digit = {NONE,};
 
