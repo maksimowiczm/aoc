@@ -12,6 +12,7 @@ ELSE (UNIX)
 ENDIF ()
 
 add_subdirectory(day01)
+add_subdirectory(day02)
 
 # testing
 enable_testing()
