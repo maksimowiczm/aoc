@@ -1,43 +1,9 @@
 #include "day02/solution.h"
+#include "day02/game.h"
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
-
-typedef struct {
-  uint64_t red;
-  uint64_t green;
-  uint64_t blue;
-} Game;
-
-static int parse_game(const char *input, size_t n, Game *output) {
-  size_t set = 0;
-  for (size_t i = 0; i < n; i++) {
-    if (input[i] == ';') {
-      set++;
-    }
-
-    uint64_t count = 0;
-    char color[6] = {0};
-    sscanf(input + i, "%llu %5s", &count, color);
-    if (count != 0) {
-      if (strncmp(color, "red", 3) == 0) {
-        if (output[set].red == 0) {
-          output[set].red = count;
-        }
-      } else if (strncmp(color, "green", 5) == 0) {
-        if (output[set].green == 0) {
-          output[set].green = count;
-        }
-      } else if (strncmp(color, "blue", 4) == 0) {
-        if (output[set].blue == 0) {
-          output[set].blue = count;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
 
 static uint64_t process_line(const char *line, size_t n, Game max) {
   uint64_t game_id = 0;
