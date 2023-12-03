@@ -4,7 +4,7 @@ extern "C" {
 
 #include "gtest/gtest.h"
 
-TEST(DAY02_TESTS, example_01) {
+TEST(DAY02, example_01) {
   const std::string input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\n"
                             "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\n"
                             "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\n"
@@ -18,7 +18,7 @@ TEST(DAY02_TESTS, example_01) {
 
 #include "input.hpp"
 
-TEST(DAY02_TESTS, puzzle_01) {
+TEST(DAY02, puzzle_01) {
   const std::string input{INPUT};
 
   const auto output = day02_solution_01(input.c_str(), input.length());
@@ -26,7 +26,7 @@ TEST(DAY02_TESTS, puzzle_01) {
   EXPECT_EQ(output, 2207ull);
 }
 
-TEST(DAY02_TESTS, example_02) {
+TEST(DAY02, example_02) {
   const std::string input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\n"
                             "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\n"
                             "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\n"
@@ -38,7 +38,7 @@ TEST(DAY02_TESTS, example_02) {
   EXPECT_EQ(output, 2286ull);
 }
 
-TEST(DAY02_TESTS, puzzle_02) {
+TEST(DAY02, puzzle_02) {
   const std::string input{INPUT};
 
   const auto output = day02_solution_02(input.c_str(), input.length());
