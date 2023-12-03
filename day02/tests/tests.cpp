@@ -2,6 +2,7 @@ extern "C" {
 #include "day02/solution.h"
 }
 
+#include "fstream"
 #include "gtest/gtest.h"
 
 TEST(DAY02, example_01) {
@@ -11,7 +12,7 @@ TEST(DAY02, example_01) {
                             "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red\n"
                             "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 
-  const auto output = day02_solution_01(input.c_str(), input.length());
+  const auto output = day02_solution_01(input.c_str(), input.length() + 1);
 
   EXPECT_EQ(output, 8ull);
 }
@@ -26,4 +27,25 @@ TEST(DAY02, example_02) {
   const auto output = day02_solution_02(input.c_str(), input.length());
 
   EXPECT_EQ(output, 2286ull);
+}
+
+static auto get_input() -> std::string {
+  auto file = std::ifstream{"input.txt"};
+  return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+}
+
+TEST(DAY02, puzzle_01) {
+  const auto input = get_input();
+
+  const auto output = day02_solution_01(input.c_str(), input.length());
+
+  EXPECT_EQ(output, 2207ull);
+}
+
+TEST(DAY02, puzzle_02) {
+  const auto input = get_input();
+
+  const auto output = day02_solution_02(input.c_str(), input.length());
+
+  EXPECT_EQ(output, 62241ull);
 }
