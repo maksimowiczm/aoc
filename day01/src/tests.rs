@@ -1,4 +1,4 @@
-use crate::day01::{day01_result_01, day01_result_02};
+use crate::{day01_result_01, day01_result_02};
 
 #[test]
 fn example_01() {

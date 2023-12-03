@@ -5,10 +5,6 @@ version = 3
 [[package]]
 name = "aoc-2023"
 version = "0.1.0"
-dependencies = [
- "cc",
- "cmake",
-]
 
 [[package]]
 name = "cc"
@@ -27,6 +23,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a31c789563b815f77f4250caee12365734369f942439b7defd71e18a48197130"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "day01"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "cmake",
+]
+
+[[package]]
+name = "day02"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "cmake",
 ]
 
 [[package]]
