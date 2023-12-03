@@ -1,3 +1,5 @@
 cmake-*
 null.cpp
 .idea
+target
+build
