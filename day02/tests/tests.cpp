@@ -16,16 +16,6 @@ TEST(DAY02, example_01) {
   EXPECT_EQ(output, 8ull);
 }
 
-#include "input.hpp"
-
-TEST(DAY02, puzzle_01) {
-  const std::string input{INPUT};
-
-  const auto output = day02_solution_01(input.c_str(), input.length());
-
-  EXPECT_EQ(output, 2207ull);
-}
-
 TEST(DAY02, example_02) {
   const std::string input = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\n"
                             "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\n"
@@ -36,12 +26,4 @@ TEST(DAY02, example_02) {
   const auto output = day02_solution_02(input.c_str(), input.length());
 
   EXPECT_EQ(output, 2286ull);
-}
-
-TEST(DAY02, puzzle_02) {
-  const std::string input{INPUT};
-
-  const auto output = day02_solution_02(input.c_str(), input.length());
-
-  EXPECT_EQ(output, 62241ull);
 }
