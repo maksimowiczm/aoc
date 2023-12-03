@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 #[derive(Clone)]
 enum CellValidType {
     Default,
@@ -6,9 +8,9 @@ enum CellValidType {
 
 #[derive(Clone)]
 enum CellInfo {
-    Valid { cell_type: CellValidType },
+    MaybePart { cell_type: CellValidType },
     Invalid,
-    Number { cell_type: CellValidType },
+    Part { cell_type: CellValidType },
 }
 
 pub struct Board {
@@ -28,7 +30,7 @@ impl From<&str> for Board {
 
 impl Board {
     pub fn valid_parts(&self) -> Vec<u32> {
-        let (info, _) = self.board_info().unwrap();
+        let info = self.board_info().unwrap();
 
         info.iter()
             .enumerate()
@@ -36,7 +38,7 @@ impl Board {
                 line.iter()
                     .enumerate()
                     .map(move |(x, cell)| match *cell {
-                        CellInfo::Number { .. } => self.board[y][x],
+                        CellInfo::Part { .. } => self.board[y][x],
                         _ => ' ',
                     })
                     .collect::<String>()
@@ -53,49 +55,52 @@ impl Board {
     }
 
     pub fn valid_gears(&self) -> Vec<u32> {
-        let (info, gears_count) = self.board_info_with_gears().unwrap();
+        let board = self.board_info_with_gears().unwrap();
 
         // 💀☠💀☠💀☠💀☠💀☠💀☠💀☠💀☠
         // 🙏
-        info.iter()
+        board
+            .iter()
             .enumerate()
+            // replace digits of parts which are not connected to gears with whitespaces
             .map(|(y, line)| {
                 line.iter()
                     .enumerate()
-                    .map(move |(x, cell)| match cell {
-                        CellInfo::Number { cell_type } => match cell_type {
-                            CellValidType::Gear { id } => (Some(*id), self.board[y][x]),
-                            _ => (None, ' '),
-                        },
+                    // filter not numbers cells
+                    .map(|(x, cell)| match cell {
+                        CellInfo::Part { cell_type } => Some((x, cell_type)),
+                        _ => None,
+                    })
+                    // filter not gears cells
+                    .map(move |cell_info| match cell_info {
+                        Some((x, CellValidType::Gear { id })) => (Some(*id), self.board[y][x]),
                         _ => (None, ' '),
                     })
                     .collect::<Vec<_>>()
             })
+            // collect all parts into (gear_id, number) tuple
             .map(|line| {
-                let mut gears = vec![false; gears_count + 1];
-                line.iter().for_each(|(id, _)| {
-                    if let Some(g) = *id {
-                        gears[g] = true
-                    }
-                });
-
-                gears
+                // collect all unique gear ids in the {line}
+                let unique_gears = line
                     .iter()
-                    .enumerate()
-                    .filter(|(_, v)| **v)
-                    .map(|(i, _)| i)
+                    .unique_by(|(id, _)| id)
+                    .map(|(id, _)| *id)
+                    .flatten();
+
+                // collect all numbers connected to any gear
+                unique_gears
                     .map(|gear_id| {
+                        // collect numbers connected with the {gear_id}
                         line.iter()
-                            .map(|(id, ch)| {
-                                if let Some(g_id) = *id {
-                                    if g_id == gear_id {
+                            .map(|(id, ch)| match id {
+                                Some(id) => {
+                                    if *id == gear_id {
                                         *ch
                                     } else {
                                         ' '
                                     }
-                                } else {
-                                    ' '
                                 }
+                                _ => ' ',
                             })
                             .collect::<String>()
                             .split(" ")
@@ -108,20 +113,13 @@ impl Board {
                     .collect::<Vec<_>>()
             })
             .flatten()
-            .fold(vec![vec![]; gears_count], |acc, (id, v)| {
-                let mut c_acc = acc.clone();
-                c_acc[id - 1].push(v);
-                c_acc
-            })
+            // group numbers by gear ids
+            .into_group_map_by(|(id, _)| *id)
             .iter()
-            .map(|v| {
-                if v.len() != 2 {
-                    None
-                } else {
-                    Some(v[0] * v[1])
-                }
-            })
-            .flatten()
+            // filter out gears which doesn't have 2 parts
+            .filter(|(_, vec)| vec.len() == 2)
+            // map only part numbers
+            .map(|(_, vec)| vec[0].1 * vec[1].1)
             .collect()
     }
 
@@ -134,7 +132,7 @@ impl Board {
         let mut validate_cell = |x: usize, y: usize, cell_type: CellValidType| {
             if let Some(line) = &mut valid_table.get_mut(y) {
                 if let Some(cell) = &mut line.get_mut(x) {
-                    **cell = CellInfo::Valid { cell_type };
+                    **cell = CellInfo::MaybePart { cell_type };
                 }
             }
         };
@@ -165,7 +163,7 @@ impl Board {
         let mut set_number = |i: usize| -> Option<()> {
             let cell = self.board.get(y)?.get(i)?;
             if cell.is_digit(10) {
-                *valid_table.get_mut(y)?.get_mut(i)? = CellInfo::Number {
+                *valid_table.get_mut(y)?.get_mut(i)? = CellInfo::Part {
                     cell_type: c_type.clone(),
                 };
             } else {
@@ -190,8 +188,8 @@ impl Board {
         }
     }
 
-    fn board_info_with_gears(&self) -> Option<(Vec<Vec<CellInfo>>, usize)> {
-        let (info, gears_count) = self.board_info()?;
+    fn board_info_with_gears(&self) -> Option<Vec<Vec<CellInfo>>> {
+        let info = self.board_info()?;
         let mut c_info = info.clone();
 
         info.iter()
@@ -200,7 +198,7 @@ impl Board {
                 line.iter()
                     .enumerate()
                     .map(move |(x, cell)| match cell {
-                        CellInfo::Valid { cell_type } => match cell_type {
+                        CellInfo::MaybePart { cell_type } => match cell_type {
                             CellValidType::Gear { id } => Some((*id, (x, y))),
                             _ => None,
                         },
@@ -222,10 +220,10 @@ impl Board {
                 }
             });
 
-        Some((c_info, gears_count))
+        Some(c_info)
     }
 
-    fn board_info(&self) -> Option<(Vec<Vec<CellInfo>>, usize)> {
+    fn board_info(&self) -> Option<Vec<Vec<CellInfo>>> {
         let x_size = self.board.first()?.len();
         let y_size = self.board.len();
 
@@ -252,7 +250,7 @@ impl Board {
             for x in 0..x_size {
                 let valid_cell = info.get(y)?.get(x)?.clone();
                 match valid_cell {
-                    CellInfo::Valid { cell_type, .. } => {
+                    CellInfo::MaybePart { cell_type, .. } => {
                         self.setup_number(&mut info, (x, y), cell_type.clone())
                     }
                     _ => (),
@@ -260,6 +258,6 @@ impl Board {
             }
         }
 
-        Some((info, gears_count))
+        Some(info)
     }
 }
