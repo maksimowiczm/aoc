@@ -1,3 +1,4 @@
+use std::ops::ControlFlow;
 use std::str::FromStr;
 
 pub struct ParseCardErr {}
@@ -46,5 +47,32 @@ impl FromStr for Card {
             winning_numbers,
             playing_numbers,
         })
+    }
+}
+
+pub struct Cards(pub Vec<Card>);
+
+impl FromStr for Cards {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Cards(
+            s.lines()
+                .filter_map(|line| {
+                    match line.chars().enumerate().try_for_each(|(i, ch)| match ch {
+                        ':' => ControlFlow::Break(i),
+                        _ => ControlFlow::Continue(()),
+                    }) {
+                        ControlFlow::Break(colon_position) => line
+                            .chars()
+                            .skip(colon_position + 1)
+                            .collect::<String>()
+                            .parse::<Card>()
+                            .ok(),
+                        _ => None,
+                    }
+                })
+                .collect::<Vec<Card>>(),
+        ))
     }
 }
