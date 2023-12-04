@@ -37,24 +37,3 @@ TEST(DAY01, example_02) {
 
   EXPECT_EQ(output, 281ull);
 }
-
-static auto get_input() -> std::string {
-  auto file = std::ifstream{"input.txt"};
-  return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
-}
-
-TEST(DAY01, puzzle_01) {
-  const auto input = get_input();
-
-  const auto output = day01_result_01(input.c_str(), input.length());
-
-  EXPECT_EQ(output, 56108ull);
-}
-
-TEST(DAY01, puzzle_02) {
-  const auto input = get_input();
-
-  const auto output = day01_result_02(input.c_str(), input.length());
-
-  EXPECT_EQ(output, 55652ull);
-}

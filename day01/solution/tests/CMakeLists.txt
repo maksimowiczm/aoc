@@ -17,5 +17,3 @@ add_executable(day01_tests tests.cpp)
 target_link_libraries(day01_tests PRIVATE GTest::gtest_main day01)
 include(GoogleTest)
 gtest_discover_tests(day01_tests)
-
-configure_file(input.txt input.txt COPYONLY)
