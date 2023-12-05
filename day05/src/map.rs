@@ -1,18 +1,25 @@
+use std::ops::{Add, Sub};
 use std::str::FromStr;
 
-pub struct Map {
-    source: u32,
-    destination: u32,
-    range: u32,
+pub struct Map<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+{
+    destination: T,
+    source: T,
+    range: T,
 }
 
-impl FromStr for Map {
+impl<T> FromStr for Map<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+{
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let map = s
             .trim()
             .split(" ")
-            .map(|v| v.parse::<u32>())
+            .map(|v| v.parse::<T>())
             .flatten()
             .collect::<Vec<_>>();
 
@@ -20,41 +27,46 @@ impl FromStr for Map {
             return Err(());
         } else {
             Ok(Map {
-                source: map[0],
-                destination: map[1],
-                range: map[2],
+                destination: map[0].clone(),
+                source: map[1].clone(),
+                range: map[2].clone(),
             })
         }
     }
 }
 
-pub struct Category {
-    pub(crate) from: String,
-    pub(crate) to: String,
+pub struct CategoryMap<'a, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+{
+    from: String,
+    to: String,
+    pub(crate) maps: &'a Vec<Map<T>>,
 }
 
-impl FromStr for Category {
-    type Err = ();
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let map = s
-            .replace("map:", "")
-            .split("-to-")
-            .map(|i| i.trim().to_owned())
-            .collect::<Vec<_>>();
+impl<'a, T> From<(String, String, &'a Vec<Map<T>>)> for CategoryMap<'a, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+{
+    fn from((from, to, maps): (String, String, &'a Vec<Map<T>>)) -> Self {
+        CategoryMap { from, to, maps }
+    }
+}
 
-        if map.len() != 2 {
-            Err(())
+impl<T> CategoryMap<'_, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+{
+    pub fn convert(&self, value: T) -> T {
+        let map_for_value = self
+            .maps
+            .iter()
+            .find(|m| m.source <= value && value <= m.source.clone() + m.range.clone());
+
+        if let Some(map) = map_for_value {
+            map.destination.clone() + value - map.source.clone()
         } else {
-            Ok(Category {
-                from: map[0].clone(),
-                to: map[1].clone(),
-            })
+            value
         }
     }
-}
-
-pub struct CategoryMap<'a> {
-    pub(crate) from: String,
-    pub(crate) to: String,
-    pub(crate) maps: &'a Vec<Map>,
 }

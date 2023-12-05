@@ -39,7 +39,7 @@ humidity-to-location map:
 56 93 4
 ";
 
-        let result = solution_01(input);
+        let result = solution_01::<u8>(input);
 
         assert_eq!(result, 35);
     }
