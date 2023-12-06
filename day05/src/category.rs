@@ -1,9 +1,6 @@
 use std::str::FromStr;
 
-pub struct Category {
-    pub(crate) from: String,
-    pub(crate) to: String,
-}
+pub struct Category {}
 
 impl FromStr for Category {
     type Err = ();
@@ -17,10 +14,7 @@ impl FromStr for Category {
         if map.len() != 2 {
             Err(())
         } else {
-            Ok(Category {
-                from: map[0].clone(),
-                to: map[1].clone(),
-            })
+            Ok(Category {})
         }
     }
 }

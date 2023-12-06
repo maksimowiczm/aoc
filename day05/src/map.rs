@@ -39,17 +39,15 @@ pub struct CategoryMap<'a, T>
 where
     T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
 {
-    from: String,
-    to: String,
-    pub(crate) maps: &'a Vec<Map<T>>,
+    maps: &'a Vec<Map<T>>,
 }
 
-impl<'a, T> From<(String, String, &'a Vec<Map<T>>)> for CategoryMap<'a, T>
+impl<'a, T> From<&'a Vec<Map<T>>> for CategoryMap<'a, T>
 where
     T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
 {
-    fn from((from, to, maps): (String, String, &'a Vec<Map<T>>)) -> Self {
-        CategoryMap { from, to, maps }
+    fn from(maps: &'a Vec<Map<T>>) -> Self {
+        CategoryMap { maps }
     }
 }
 
@@ -57,7 +55,7 @@ impl<T> CategoryMap<'_, T>
 where
     T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
 {
-    pub fn convert(&self, value: T) -> T {
+    pub fn convert_to_destination(&self, value: T) -> T {
         let map_for_value = self
             .maps
             .iter()
@@ -65,6 +63,22 @@ where
 
         if let Some(map) = map_for_value {
             map.destination.clone() + value - map.source.clone()
+        } else {
+            value
+        }
+    }
+
+    pub fn convert_to_source(&self, value: T) -> T
+    where
+        T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Ord + Copy,
+    {
+        let map_for_value = self
+            .maps
+            .iter()
+            .find(|m| m.destination <= value && value <= (m.destination + m.range));
+
+        if let Some(map) = map_for_value {
+            map.source + value - map.destination
         } else {
             value
         }
