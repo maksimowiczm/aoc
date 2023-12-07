@@ -12,4 +12,15 @@ Distance:  9  40  200
 
         assert_eq!(result, 288);
     }
+
+    #[test]
+    fn example_02() {
+        let input = "Time:      71530
+Distance:  940200
+";
+
+        let result = solution_01(input);
+
+        assert_eq!(result, 71503);
+    }
 }
