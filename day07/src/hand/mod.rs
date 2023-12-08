@@ -1,15 +1,20 @@
 use std::marker::PhantomData;
 
-pub mod camel_joker_poker;
+pub mod camel_joker;
 pub mod camel_poker;
 mod r#impl;
 pub mod poker;
+mod shared;
 
 pub struct Hand<T> {
     phantom: PhantomData<T>,
     cards: Vec<u8>,
     bid: u64,
     line: String,
+}
+
+pub trait HandValue<'a, T> {
+    fn value(&'a self) -> Vec<T>;
 }
 
 pub trait HandBid {

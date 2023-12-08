@@ -1,82 +1,55 @@
-pub mod hand_camel_joker_value;
+pub mod camel_joker_hand_value;
 
+use crate::camel_groups_matching;
 use std::cmp::Ordering;
-use std::collections::HashMap;
 
-use crate::hand::camel_joker_poker::hand_camel_joker_value::HandCamelJokerValue;
-use crate::hand::{CardValue, Hand};
+use crate::hand::camel_joker::camel_joker_hand_value::CamelJokerHandValue;
+use crate::hand::{Hand, HandValue};
 
-macro_rules! groups_matching {
-    ($groups:tt, $result:expr, $group_length:expr, $str:expr) => {{
-        $groups
-            .iter()
-            .filter(|(_, cards)| cards.len() == $group_length)
-            .map(|(_, _)| $result($str))
-            .collect::<Vec<_>>()
-    }};
-}
-
-impl CardValue for Hand<HandCamelJokerValue> {
-    fn get_char_as_card(ch: char) -> u8 {
-        let mut has_card = HashMap::<char, u8>::new();
-        has_card.insert('A', 15);
-        has_card.insert('K', 13);
-        has_card.insert('Q', 12);
-        has_card.insert('J', 11);
-        has_card.insert('T', 10);
-
-        if ch.is_digit(10) {
-            ch as u8 - 48
-        } else {
-            *has_card.get(&ch).unwrap()
-        }
-    }
-}
-
-impl Hand<HandCamelJokerValue> {
-    fn value_five(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
-        groups_matching!(groups, HandCamelJokerValue::Five, 5, self.line.clone())
+impl Hand<CamelJokerHandValue> {
+    fn value_five(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
+        camel_groups_matching!(groups, CamelJokerHandValue::Five, 5, self.line.clone())
     }
 
-    fn value_four(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
-        groups_matching!(groups, HandCamelJokerValue::Four, 4, self.line.clone())
+    fn value_four(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
+        camel_groups_matching!(groups, CamelJokerHandValue::Four, 4, self.line.clone())
     }
 
-    fn value_three(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
-        groups_matching!(groups, HandCamelJokerValue::Three, 3, self.line.clone())
+    fn value_three(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
+        camel_groups_matching!(groups, CamelJokerHandValue::Three, 3, self.line.clone())
     }
 
-    fn value_two_pair(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
+    fn value_two_pair(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
         let pairs = self.value_pair(groups);
         let pair1 = pairs.get(0);
         let pair2 = pairs.get(1);
         match (pair1, pair2) {
-            (Some(HandCamelJokerValue::Pair(str)), Some(HandCamelJokerValue::Pair(_))) => {
-                vec![HandCamelJokerValue::TwoPair(str.clone()); 1]
+            (Some(CamelJokerHandValue::Pair(str)), Some(CamelJokerHandValue::Pair(_))) => {
+                vec![CamelJokerHandValue::TwoPair(str.clone()); 1]
             }
             _ => vec![],
         }
     }
 
-    fn value_full(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
+    fn value_full(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
         let threes = self.value_three(groups);
         let three = threes.get(0);
 
         let pairs = self.value_pair(groups);
         let pair = pairs.get(0);
         match (three, pair) {
-            (Some(HandCamelJokerValue::Three(str)), Some(HandCamelJokerValue::Pair(_))) => {
-                vec![HandCamelJokerValue::Full(str.clone()); 1]
+            (Some(CamelJokerHandValue::Three(str)), Some(CamelJokerHandValue::Pair(_))) => {
+                vec![CamelJokerHandValue::Full(str.clone()); 1]
             }
             _ => vec![],
         }
     }
 
-    fn value_pair(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<HandCamelJokerValue> {
-        groups_matching!(groups, HandCamelJokerValue::Pair, 2, self.line.clone())
+    fn value_pair(&self, groups: &Vec<(u8, Vec<u8>)>) -> Vec<CamelJokerHandValue> {
+        camel_groups_matching!(groups, CamelJokerHandValue::Pair, 2, self.line.clone())
     }
 
-    pub fn internal_value(&self) -> Vec<HandCamelJokerValue> {
+    fn internal_value(&self) -> Vec<CamelJokerHandValue> {
         let groups = self.collect_groups();
 
         let mut results = vec![];
@@ -94,12 +67,14 @@ impl Hand<HandCamelJokerValue> {
         let mut results = results.iter().flat_map(|v| v.clone()).collect::<Vec<_>>();
         self.cards
             .iter()
-            .for_each(|_| results.push(HandCamelJokerValue::HighCard(self.line.clone())));
+            .for_each(|_| results.push(CamelJokerHandValue::HighCard(self.line.clone())));
 
         results
     }
+}
 
-    pub fn value(&self) -> Vec<HandCamelJokerValue> {
+impl HandValue<'_, CamelJokerHandValue> for Hand<CamelJokerHandValue> {
+    fn value(&self) -> Vec<CamelJokerHandValue> {
         let jokers_positions = self
             .cards
             .iter()
@@ -128,7 +103,7 @@ impl Hand<HandCamelJokerValue> {
                 cards.sort();
                 cards.reverse();
 
-                let hand = Hand::<HandCamelJokerValue>::from((cards, 0, line));
+                let hand = Hand::<CamelJokerHandValue>::from((cards, 0, line));
                 hand
             })
             .collect::<Vec<_>>();
@@ -148,13 +123,13 @@ impl Hand<HandCamelJokerValue> {
     }
 }
 
-impl PartialOrd<Self> for Hand<HandCamelJokerValue> {
+impl PartialOrd<Self> for Hand<CamelJokerHandValue> {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Hand<HandCamelJokerValue> {
+impl Ord for Hand<CamelJokerHandValue> {
     fn cmp(&self, other: &Self) -> Ordering {
         let my = self.value();
         let other = other.value();

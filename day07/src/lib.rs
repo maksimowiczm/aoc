@@ -1,8 +1,7 @@
 mod hand;
 mod tests;
 
-use crate::hand::camel_poker::hand_camel_value::HandCamelValue;
-use crate::hand::{Hand, HandBid, CardValue};
+use crate::hand::{CardValue, Hand, HandBid};
 
 pub fn solution<T>(input: &str) -> u64
 where
