@@ -4,7 +4,7 @@ mod tests;
 use std::cmp::Ordering;
 
 use crate::hand::poker::hand_poker_value::HandPokerValue;
-use crate::hand::{Hand, HandValue};
+use crate::hand::Hand;
 
 macro_rules! groups_matching {
     ($groups:tt, $result:expr, $group_length:expr) => {{
@@ -14,12 +14,6 @@ macro_rules! groups_matching {
             .map(|(v, _)| $result(*v))
             .collect::<Vec<_>>()
     }};
-}
-
-impl HandValue for Hand<HandPokerValue> {
-    fn get_bid(&self) -> u64 {
-        self.bid
-    }
 }
 
 impl Hand<HandPokerValue> {

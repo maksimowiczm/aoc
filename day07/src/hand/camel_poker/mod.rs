@@ -1,9 +1,10 @@
 pub(crate) mod hand_camel_value;
 
 use std::cmp::Ordering;
+use std::collections::HashMap;
 
 use crate::hand::camel_poker::hand_camel_value::HandCamelValue;
-use crate::hand::{Hand, HandValue};
+use crate::hand::{CardValue, Hand};
 
 macro_rules! groups_matching {
     ($groups:tt, $result:expr, $group_length:expr, $str:expr) => {{
@@ -15,9 +16,20 @@ macro_rules! groups_matching {
     }};
 }
 
-impl HandValue for Hand<HandCamelValue<'_>> {
-    fn get_bid(&self) -> u64 {
-        self.bid
+impl CardValue for Hand<HandCamelValue<'_>> {
+    fn get_char_as_card(ch: char) -> u8 {
+        let mut has_card = HashMap::<char, u8>::new();
+        has_card.insert('A', 15);
+        has_card.insert('K', 13);
+        has_card.insert('Q', 12);
+        has_card.insert('J', 1);
+        has_card.insert('T', 10);
+
+        if ch.is_digit(10) {
+            ch as u8 - 48
+        } else {
+            *has_card.get(&ch).unwrap()
+        }
     }
 }
 
