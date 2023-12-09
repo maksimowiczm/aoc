@@ -14,9 +14,18 @@ impl<T> Sequence<T>
 where
     T: Sub<Output = T> + Copy + Add<Output = T> + Default,
 {
-    pub fn predict(&self) -> T {
+    pub fn predict_forward(&self) -> T {
         match &self.interpolation {
-            Some(interpolation) => *self.sequence.last().unwrap() + interpolation.predict(),
+            Some(interpolation) => *self.sequence.last().unwrap() + interpolation.predict_forward(),
+            None => Default::default(),
+        }
+    }
+
+    pub fn predict_backward(&self) -> T {
+        match &self.interpolation {
+            Some(interpolation) => {
+                *self.sequence.first().unwrap() - interpolation.predict_backward()
+            }
             None => Default::default(),
         }
     }

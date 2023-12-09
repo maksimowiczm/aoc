@@ -24,7 +24,17 @@ pub fn solution_01(input: &str) -> i64 {
     let lines = parse_input::<i64>(input);
     let predictions = lines
         .iter()
-        .map(|line| Sequence::from(line.clone()).predict())
+        .map(|line| Sequence::from(line.clone()).predict_forward())
+        .collect::<Vec<_>>();
+
+    predictions.iter().fold(0, |acc, v| acc + v)
+}
+
+pub fn solution_02(input: &str) -> i64 {
+    let lines = parse_input::<i64>(input);
+    let predictions = lines
+        .iter()
+        .map(|line| Sequence::from(line.clone()).predict_backward())
         .collect::<Vec<_>>();
 
     predictions.iter().fold(0, |acc, v| acc + v)
