@@ -50,7 +50,7 @@ where
         let map_for_value = self
             .maps
             .iter()
-            .find(|m| m.source <= value && value <= m.source.clone() + m.range.clone());
+            .find(|m| m.source <= value && value < m.source.clone() + m.range.clone());
 
         if let Some(map) = map_for_value {
             map.destination.clone() + value - map.source.clone()
@@ -66,7 +66,7 @@ where
         let map_for_value = self
             .maps
             .iter()
-            .find(|m| m.destination <= value && value <= (m.destination + m.range));
+            .find(|m| m.destination <= value && value < (m.destination + m.range));
 
         if let Some(map) = map_for_value {
             map.source + value - map.destination
