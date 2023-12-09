@@ -4,40 +4,19 @@ use itertools::Itertools;
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 
+mod aoc_tests;
 mod category;
 mod map;
 mod tests;
 
 pub fn solution_01<T>(input: &str) -> T
-    where
-        T: Add<Output=T> + Sub<Output=T> + PartialOrd + FromStr + Ord + Clone,
+where
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Ord + Clone,
 {
     let lines = input.split("\n").collect::<Vec<_>>();
-
-    let seeds = lines[0]
-        .chars()
-        .skip(6)
-        .collect::<String>()
-        .split(" ")
-        .flat_map(|seed| seed.parse::<T>())
-        .collect::<Vec<_>>();
-
-    let categories = lines
-        .iter()
-        .flat_map(|line| line.parse::<Category>())
-        .collect::<Vec<_>>();
-
-    let maps = lines
-        .iter()
-        .map(|l| l.parse::<Map<T>>())
-        .group_by(|v| v.is_ok())
-        .into_iter()
-        .filter(|(success, _)| *success)
-        .map(|(_, v)| v.flatten().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
-
-    assert_eq!(categories.len(), maps.len());
-
+    let seeds = parse_seeds::<T>(lines[0]);
+    let categories = parse_categories::<T>(&lines);
+    let maps = parse_maps::<T>(&lines);
     let category_maps = (0..categories.len())
         .map(|i| CategoryMap::from(&maps[i]))
         .collect::<Vec<_>>();
@@ -55,56 +34,65 @@ pub fn solution_01<T>(input: &str) -> T
         .unwrap()
 }
 
-pub fn solution_02(input: &str) -> usize {
+pub fn solution_02(input: &str) -> u64 {
     let lines = input.split("\n").collect::<Vec<_>>();
-
-    let seeds = lines[0]
-        .chars()
-        .skip(6)
-        .collect::<String>()
-        .split(" ")
-        .flat_map(|seed| seed.parse::<usize>())
-        .collect::<Vec<_>>();
-
+    let seeds = parse_seeds::<u64>(lines[0]);
     let seeds_ranges = (0..seeds.len())
-        .map(|v| v * 2)
-        .filter(|v| *v < seeds.len())
+        .step_by(2)
         .map(|i| (seeds[i], seeds[i] + seeds[i + 1]))
         .collect::<Vec<_>>();
-
-    let categories = lines
-        .iter()
-        .flat_map(|line| line.parse::<Category>())
-        .collect::<Vec<_>>();
-
-    let maps = lines
-        .iter()
-        .map(|l| l.parse::<Map<usize>>())
-        .group_by(|v| v.is_ok())
-        .into_iter()
-        .filter(|(success, _)| *success)
-        .map(|(_, v)| v.flatten().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
-
-    assert_eq!(categories.len(), maps.len());
-
+    let categories = parse_categories::<u64>(&lines);
+    let maps = parse_maps::<u64>(&lines);
     let category_maps = (0..categories.len())
         .map(|i| CategoryMap::from(&maps[i]))
         .collect::<Vec<_>>();
 
-    let mut iter = 0..usize::MAX;
-    while let Some(v) = iter.next() {
-        let out = category_maps
-            .iter()
-            .rev()
-            .fold(v, |acc, category_map| category_map.convert_to_source(acc));
+    (0..u64::MAX)
+        .find_or_last(|location| {
+            let seed = category_maps
+                .iter()
+                .rev()
+                .fold(*location, |acc, category_map| {
+                    category_map.convert_to_source(acc)
+                });
 
-        if seeds_ranges.iter().fold(false, |acc, (start, end)| {
-            acc || (*start <= out && out <= *end)
-        }) {
-            return v;
-        }
-    }
+            seeds_ranges
+                .iter()
+                .any(|&(start, end)| start <= seed && seed <= end)
+        })
+        .unwrap()
+}
 
-    panic!()
+fn parse_seeds<T>(input: &str) -> Vec<T>
+where
+    T: FromStr,
+{
+    input
+        .chars()
+        .skip(6)
+        .collect::<String>()
+        .split(" ")
+        .flat_map(|seed| seed.parse::<T>())
+        .collect()
+}
+
+fn parse_categories<T>(lines: &Vec<&str>) -> Vec<Category> {
+    lines
+        .iter()
+        .flat_map(|line| line.parse::<Category>())
+        .collect::<Vec<_>>()
+}
+
+fn parse_maps<T>(lines: &Vec<&str>) -> Vec<Vec<Map<T>>>
+where
+    T: Clone + FromStr,
+{
+    lines
+        .iter()
+        .map(|l| l.parse::<Map<T>>())
+        .group_by(|v| v.is_ok())
+        .into_iter()
+        .filter(|(success, _)| *success)
+        .map(|(_, v)| v.flatten().collect::<Vec<_>>())
+        .collect::<Vec<_>>()
 }

@@ -1,10 +1,7 @@
 use std::ops::{Add, Sub};
 use std::str::FromStr;
 
-pub struct Map<T>
-where
-    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
-{
+pub struct Map<T> {
     destination: T,
     source: T,
     range: T,
@@ -12,7 +9,7 @@ where
 
 impl<T> FromStr for Map<T>
 where
-    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+    T: FromStr + Clone,
 {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -35,17 +32,11 @@ where
     }
 }
 
-pub struct CategoryMap<'a, T>
-where
-    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
-{
+pub struct CategoryMap<'a, T> {
     maps: &'a Vec<Map<T>>,
 }
 
-impl<'a, T> From<&'a Vec<Map<T>>> for CategoryMap<'a, T>
-where
-    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
-{
+impl<'a, T> From<&'a Vec<Map<T>>> for CategoryMap<'a, T> {
     fn from(maps: &'a Vec<Map<T>>) -> Self {
         CategoryMap { maps }
     }
@@ -53,7 +44,7 @@ where
 
 impl<T> CategoryMap<'_, T>
 where
-    T: Add<Output = T> + Sub<Output = T> + PartialOrd + FromStr + Clone,
+    T: Add<Output = T> + Sub<Output = T> + PartialOrd + Clone,
 {
     pub fn convert_to_destination(&self, value: T) -> T {
         let map_for_value = self
