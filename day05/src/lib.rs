@@ -63,6 +63,38 @@ pub fn solution_02(input: &str) -> u64 {
         .unwrap()
 }
 
+pub fn solution_02_bf(input: &str) -> u64 {
+    let lines = input.split("\n").collect::<Vec<_>>();
+    let seeds = parse_seeds::<u64>(lines[0]);
+    let seeds_ranges = (0..seeds.len())
+        .step_by(2)
+        .map(|i| (seeds[i], seeds[i] + seeds[i + 1]))
+        .collect::<Vec<_>>();
+    let categories = parse_categories::<u64>(&lines);
+    let maps = parse_maps::<u64>(&lines);
+    let category_maps = (0..categories.len())
+        .map(|i| CategoryMap::from(&maps[i]))
+        .collect::<Vec<_>>();
+
+    let mut mini = u64::MAX;
+
+    seeds_ranges.iter().for_each(|&(start, end)| {
+        (start..end).for_each(|i| {
+            let seed = category_maps.iter().fold(i, |acc, category_map| {
+                category_map.convert_to_destination(acc)
+            });
+
+            if seed < mini {
+                mini = seed;
+            }
+        });
+
+        println!("Range done found {}", mini);
+    });
+
+    mini
+}
+
 fn parse_seeds<T>(input: &str) -> Vec<T>
 where
     T: FromStr,
