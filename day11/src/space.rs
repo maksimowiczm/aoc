@@ -13,7 +13,9 @@ impl Space {
         &self,
         (from_row, from_col): (usize, usize),
         (to_row, to_col): (usize, usize),
+        scale: usize,
     ) -> usize {
+        let scale = if scale == 1 { scale + 1 } else { scale };
         let empty_rows = self
             .empty_rows
             .iter()
@@ -25,7 +27,7 @@ impl Space {
                 }
             })
             .count();
-        let distance_row = from_row.abs_diff(to_row) + empty_rows;
+        let distance_row = from_row.abs_diff(to_row) - empty_rows + empty_rows * scale;
 
         let empty_cols = self
             .empty_cols
@@ -38,12 +40,12 @@ impl Space {
                 }
             })
             .count();
-        let distance_cols = from_col.abs_diff(to_col) + empty_cols;
+        let distance_cols = from_col.abs_diff(to_col) - empty_cols + empty_cols * scale;
 
         distance_cols + distance_row
     }
 
-    pub fn distance_between_galaxies_pairs(&self) -> u64 {
+    pub fn distance_between_galaxies_pairs(&self, scale: usize) -> u64 {
         let distance = self
             .galaxies
             .iter()
@@ -51,7 +53,7 @@ impl Space {
                 self.galaxies
                     .iter()
                     .filter(|g| *g != galaxy)
-                    .map(|other| self.distance_between_points(*galaxy, *other))
+                    .map(|other| self.distance_between_points(*galaxy, *other, scale))
                     .sum::<usize>()
             })
             .sum::<usize>();
