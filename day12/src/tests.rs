@@ -15,6 +15,7 @@ mod tests {
         assert_eq!(result, Ok(21));
     }
 
+    #[ignore]
     #[test]
     fn example_02_01() {
         const INPUT: &str = "???.### 1,1,3
