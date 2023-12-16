@@ -1,8 +1,9 @@
+use crate::Arrangements;
+use crate::FromFolds;
 use itertools::Itertools;
 use rand::Rng;
 
 use crate::springs::spring::Spring;
-use crate::springs::Arrangements;
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::vec;
@@ -11,6 +12,37 @@ use std::vec;
 pub struct SpringRow {
     row: Vec<Spring>,
     groups: Vec<u64>,
+}
+
+impl FromFolds for SpringRow {
+    fn from_folds(input: &str, folds: u8) -> Result<Self, ()>
+    where
+        Self: Sized,
+    {
+        let spring_row = input.parse::<SpringRow>()?;
+        let groups = spring_row.groups;
+        let mut result_groups = groups.clone();
+
+        let row = spring_row.row;
+        let mut result_row = row.clone();
+
+        (0..folds).for_each(|_| {
+            if let Some(spring) = result_row.last() {
+                match spring {
+                    Spring::Damaged => result_row.push(Spring::Operational),
+                    _ => result_row.push(Spring::Unknown),
+                }
+            }
+            result_row.extend(row.clone());
+
+            result_groups.extend(groups.clone());
+        });
+
+        Ok(SpringRow {
+            row: result_row,
+            groups: result_groups,
+        })
+    }
 }
 
 impl FromStr for SpringRow {
@@ -38,7 +70,7 @@ impl ToString for SpringRow {
 }
 
 impl Arrangements for SpringRow {
-    fn arrangements_count(&self) -> u64 {
+    fn arrangements_bogo_count(&self) -> u64 {
         let (_, damaged_count, unknown_count) = self.count_springs();
 
         let groups_sum = self.groups.iter().sum::<u64>();
@@ -103,6 +135,18 @@ impl Arrangements for SpringRow {
                 row
             })
             .collect::<Vec<_>>();
+
+        let strings = rows
+            .iter()
+            .filter(|row| self.valid_row(row))
+            .map(|row| SpringRow {
+                row: row.clone(),
+                groups: vec![],
+            })
+            .map(|row| row.to_string())
+            .collect::<Vec<_>>();
+
+        dbg!(&strings);
 
         rows.iter().fold(
             0,
