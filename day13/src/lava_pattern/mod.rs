@@ -83,56 +83,39 @@ impl LavaPattern {
         Ok(LavaPattern(rotated))
     }
 
-    pub fn fix_smudge(&self) -> Result<((usize, usize), bool), ()> {
-        let mirror_position =
-            if let Some(&position) = self.mirror_position().ok_or(())?.iter().nth(0) {
-                position
-            } else {
-                let rotated = self.rotate_90().unwrap();
-                *rotated.mirror_position().unwrap().iter().nth(0).unwrap()
-            };
+    pub fn fix_smudge(&self) -> Option<(usize, usize)> {
+        println!("im in");
+        let binding = self.mirror_position()?;
+        let mirror_position = binding.iter().nth(0);
         let height = self.0.len();
-        let width = self.0.get(0).ok_or(())?.len();
+        let width = self.0.get(0)?.len();
 
         let mut new_mirror = None;
         for y in 0..height {
             for x in 0..width {
                 let mut try_smudge = self.clone();
                 let cell = try_smudge.0.get_mut(y).unwrap().get_mut(x).unwrap();
-                println!(
-                    "{:?} -> {y} {x} {cell}, {height}, {height}",
-                    &self as *const _
-                );
 
                 match cell {
                     Thing::Rock => *cell = Thing::Ash,
                     Thing::Ash => *cell = Thing::Rock,
                 }
 
-                // try vertical
                 if let Some(&new_position) = try_smudge.mirror_position().unwrap().iter().nth(0) {
-                    if new_position != mirror_position {
-                        new_mirror = Some((new_position, false));
-                        break;
-                    }
-                }
-                // try horizontal
-                let rotated_try_smudge = try_smudge.rotate_90().unwrap();
-                if let Some(&new_position) =
-                    rotated_try_smudge.mirror_position().unwrap().iter().nth(0)
-                {
-                    if new_position != mirror_position {
-                        new_mirror = Some((new_position, true));
+                    if let Some(&mirror_position) = mirror_position {
+                        if new_position != mirror_position {
+                            new_mirror = Some(new_position);
+                            break;
+                        }
+                    } else {
+                        new_mirror = Some(new_position);
                         break;
                     }
                 }
             }
         }
 
-        if new_mirror.is_none() {
-            println!("{}", self);
-            assert!(new_mirror.is_some());
-        }
-        new_mirror.ok_or(())
+        println!("{:?} => {:?}\n {self}", mirror_position, new_mirror);
+        new_mirror
     }
 }

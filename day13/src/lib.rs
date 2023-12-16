@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::lava_pattern::{LavaPattern, Mirror};
 use std::str::FromStr;
 
@@ -42,14 +43,31 @@ pub fn solution_02(input: &str) -> Result<u64, ()> {
         .flat_map(LavaPattern::from_str)
         .collect::<Vec<_>>();
 
-    let result = patterns
+    let mut map = HashMap::new();
+
+    let result_cols = patterns
         .iter()
-        .map(LavaPattern::fix_smudge)
-        .fold(0, |acc, pattern| {
-            let ((_, res), as_row) = pattern.unwrap();
-            let multiplier = if as_row { 100 } else { 1 };
-            acc + res * multiplier
+        .enumerate()
+        .map(|(i, p)| (i, p.fix_smudge()))
+        .filter(|(_, p)| p.is_some())
+        .map(|(i, p)| (i, p.unwrap()))
+        .fold(0, |acc, (i, (_, res))| {
+            assert!(!map.contains_key(&i));
+            map.insert(i, res);
+            acc + res
         });
 
-    Ok(result as u64)
+    let result_rows = patterns
+        .iter()
+        .enumerate()
+        .map(|(i, p)| (i, p.rotate_90().unwrap().fix_smudge()))
+        .filter(|(_, p)| p.is_some())
+        .map(|(i, p)| (i, p.unwrap()))
+        .fold(0, |acc, (i, (_, res))| {
+            assert!(!map.contains_key(&i));
+            map.insert(i, res);
+            acc + res * 100
+        });
+
+    Ok(result_cols as u64 + result_rows as u64)
 }
