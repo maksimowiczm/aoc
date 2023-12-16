@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use super::Mirror;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PatternRow(Vec<Thing>);
 
 impl FromStr for PatternRow {
@@ -43,6 +43,10 @@ impl PatternRow {
 
     pub fn get(&self, i: usize) -> Option<&Thing> {
         self.0.get(i)
+    }
+
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Thing> {
+        self.0.get_mut(i)
     }
 }
 
