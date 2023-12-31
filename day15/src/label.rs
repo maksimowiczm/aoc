@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+#[derive(Clone, PartialOrd, PartialEq)]
 pub struct Label(String);
 
 impl FromStr for Label {
