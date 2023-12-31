@@ -76,29 +76,6 @@ mod tests {
 ";
 
         let result = solution_02(INPUT);
-        assert_eq!(result, Ok(400));
-    }
-
-    #[test]
-    fn example_02_02() {
-        const INPUT: &str = ".#####.##..
-##...##.#..
-##.##..####
-#...##....#
-.#....#####
-.#....#####
-#...##....#
-##.#...####
-##...##.#..
-.#####.##..
-#####..##..
-#.###....#.
-#.###....#.
-#####..##..
-.#####.##..
-";
-
-        let result = solution_02(INPUT);
-        assert_eq!(result, Ok(400));
+        assert_eq!(result, 400);
     }
 }

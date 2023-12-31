@@ -83,14 +83,12 @@ impl LavaPattern {
         Ok(LavaPattern(rotated))
     }
 
-    pub fn fix_smudge(&self) -> Option<(usize, usize)> {
-        println!("im in");
+    pub fn fix_smudge(&self) -> Option<Self> {
         let binding = self.mirror_position()?;
         let mirror_position = binding.iter().nth(0);
         let height = self.0.len();
         let width = self.0.get(0)?.len();
 
-        let mut new_mirror = None;
         for y in 0..height {
             for x in 0..width {
                 let mut try_smudge = self.clone();
@@ -104,18 +102,15 @@ impl LavaPattern {
                 if let Some(&new_position) = try_smudge.mirror_position().unwrap().iter().nth(0) {
                     if let Some(&mirror_position) = mirror_position {
                         if new_position != mirror_position {
-                            new_mirror = Some(new_position);
-                            break;
+                            return Some(try_smudge);
                         }
                     } else {
-                        new_mirror = Some(new_position);
-                        break;
+                        return Some(try_smudge);
                     }
                 }
             }
         }
 
-        println!("{:?} => {:?}\n {self}", mirror_position, new_mirror);
-        new_mirror
+        None
     }
 }

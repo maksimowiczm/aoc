@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::lava_pattern::{LavaPattern, Mirror};
 use std::str::FromStr;
 
@@ -37,37 +36,72 @@ pub fn solution_01(input: &str) -> Result<u64, ()> {
     Ok(result as u64)
 }
 
-pub fn solution_02(input: &str) -> Result<u64, ()> {
+pub fn solution_02(input: &str) -> usize {
     let patterns = input
         .split("\n\n")
         .flat_map(LavaPattern::from_str)
         .collect::<Vec<_>>();
 
-    let mut map = HashMap::new();
+    let mut sum = 0;
 
-    let result_cols = patterns
+    let mut result_cols = patterns
         .iter()
-        .enumerate()
-        .map(|(i, p)| (i, p.fix_smudge()))
-        .filter(|(_, p)| p.is_some())
-        .map(|(i, p)| (i, p.unwrap()))
-        .fold(0, |acc, (i, (_, res))| {
-            assert!(!map.contains_key(&i));
-            map.insert(i, res);
-            acc + res
-        });
+        .flat_map(|p| {
+            if let Some(res) = p.fix_smudge() {
+                Some((p, res))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    result_cols.sort();
 
-    let result_rows = patterns
+    result_cols.iter().for_each(|(s, p)| {
+        let old = s.mirror_position().unwrap();
+        let mirrors = p.mirror_position().unwrap();
+        let new = mirrors
+            .iter()
+            .filter(|m| !old.iter().any(|old_m| *old_m == **m))
+            .collect::<Vec<_>>();
+        let mirror = new.iter().nth(0).unwrap();
+        sum += mirror.1;
+        println!("{:?}", mirror);
+        // println!("FROM:\n{s}\nto:\n{p}");
+    });
+
+    let mut result_rows = patterns
         .iter()
-        .enumerate()
-        .map(|(i, p)| (i, p.rotate_90().unwrap().fix_smudge()))
-        .filter(|(_, p)| p.is_some())
-        .map(|(i, p)| (i, p.unwrap()))
-        .fold(0, |acc, (i, (_, res))| {
-            assert!(!map.contains_key(&i));
-            map.insert(i, res);
-            acc + res * 100
-        });
+        .map(|p| (p, p.rotate_90().unwrap()))
+        .flat_map(|(s, p)| {
+            if let Some(res) = p.fix_smudge() {
+                Some((
+                    s,
+                    res.rotate_90()
+                        .unwrap()
+                        .rotate_90()
+                        .unwrap()
+                        .rotate_90()
+                        .unwrap(),
+                ))
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    result_rows.sort();
 
-    Ok(result_cols as u64 + result_rows as u64)
+    result_rows.iter().for_each(|(s, p)| {
+        let old = s.rotate_90().unwrap().mirror_position().unwrap();
+        let mirrors = p.rotate_90().unwrap().mirror_position().unwrap();
+        let new = mirrors
+            .iter()
+            .filter(|m| !old.iter().any(|old_m| *old_m == **m))
+            .collect::<Vec<_>>();
+        let mirror = new.iter().nth(0).unwrap();
+        sum += mirror.1 * 100;
+        println!("ROW {:?}", mirror);
+        // println!("FROM:\n{s}\nto:\n{p}");
+    });
+
+    sum
 }
