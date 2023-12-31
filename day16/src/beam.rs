@@ -93,15 +93,11 @@ impl Beam {
             .sum()
     }
 
-    pub fn from_cave(cave: &Cave) -> Self {
+    pub fn from_cave_with_start(cave: &Cave, (x, y, direction): (u8, u8, BeamDirection)) -> Self {
         let mut beam_grid = Beam(vec![vec![BeamCell::Empty; cave.0[0].len()]; cave.0.len()]);
-        let start = BeamHead {
-            x: 0,
-            y: 0,
-            direction: BeamDirection::Right,
-        };
-        let bemized_start = start.beamize(&cave);
-        let mut beams = match bemized_start {
+        let start = BeamHead { x, y, direction };
+        let beamized_start = start.beamize(&cave);
+        let mut beams = match beamized_start {
             Some(vec) => vec,
             _ => vec![start],
         };
@@ -148,6 +144,10 @@ impl Beam {
         }
 
         beam_grid
+    }
+
+    pub fn from_cave(cave: &Cave) -> Self {
+        Self::from_cave_with_start(cave, (0, 0, BeamDirection::Right))
     }
 }
 
