@@ -70,6 +70,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 fn solution_02_bf(input: &str) -> u64 {
     let lines = input.split("\n").collect::<Vec<_>>();
     let seeds = parse_seeds::<u64>(lines[0]);
