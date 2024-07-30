@@ -5,16 +5,105 @@ use std::str::FromStr;
 
 pub struct Day17;
 
+fn solution(
+    city: City,
+    mut queue: BinaryHeap<Cell>,
+    target: impl Target,
+    neighbor: impl NeighboursVisitor,
+) -> u32 {
+    assert!(!city.blocks.is_empty());
+    assert!(!city.blocks[0].is_empty());
+    assert!(!queue.is_empty());
+
+    let mut visited = HashSet::new();
+
+    while let Some(cell) = queue.pop() {
+        if cell.is_target(&city, &target) {
+            return cell.cost;
+        }
+
+        for neighbour in cell.neighbours(&city, &neighbor) {
+            if visited.insert(neighbour.vertex()) {
+                queue.push(neighbour);
+            }
+        }
+    }
+
+    unreachable!();
+}
+
 impl SolveDay for Day17 {
     type Part1 = u32;
     type Part2 = u32;
 
     fn solve_part1(input: &str) -> Option<Self::Part1> {
         let city = input.parse::<City>().unwrap();
+        let mut queue = BinaryHeap::new();
+        struct Part1;
+        impl Target for Part1 {
+            fn is_target(&self, cell: &Cell, city: &City) -> bool {
+                cell.position.row == city.blocks.len() - 1
+                    && cell.position.col == city.blocks[0].len() - 1
+            }
+        }
+        impl NeighboursVisitor for Part1 {
+            fn get_neighbours(&self, cell: &Cell, city: &City) -> Vec<Cell> {
+                let mut neighbours = vec![];
 
-        assert!(!city.blocks.is_empty());
-        assert!(!city.blocks[0].is_empty());
+                for direction in [
+                    Direction::Up,
+                    Direction::Down,
+                    Direction::Left,
+                    Direction::Right,
+                ] {
+                    if cell.moves >= 3 && cell.direction == direction {
+                        continue;
+                    }
 
+                    if cell.direction.opposite_of(&direction) {
+                        continue;
+                    }
+
+                    let next_position = match cell.position.move_in_direction(&direction, city) {
+                        Some(position) => position,
+                        None => continue,
+                    };
+                    let moves = if cell.direction == direction {
+                        cell.moves + 1
+                    } else {
+                        1
+                    };
+
+                    neighbours.push(Cell {
+                        cost: cell.cost + city.blocks[next_position.row][next_position.col],
+                        position: next_position,
+                        direction,
+                        moves,
+                    });
+                }
+
+                neighbours
+            }
+        }
+
+        queue.push(Cell {
+            cost: city.blocks[0][1],
+            position: Position { row: 0, col: 1 },
+            direction: Direction::Right,
+            moves: 1,
+        });
+        queue.push(Cell {
+            cost: city.blocks[1][0],
+            position: Position { row: 1, col: 0 },
+            direction: Direction::Down,
+            moves: 1,
+        });
+
+        Some(solution(city, queue, Part1, Part1))
+    }
+
+    fn solve_part2(input: &str) -> Option<Self::Part2> {
+        let city = input.parse::<City>().unwrap();
         let mut queue = BinaryHeap::new();
         queue.push(Cell {
             cost: city.blocks[0][1],
@@ -28,23 +117,62 @@ impl SolveDay for Day17 {
             direction: Direction::Down,
             moves: 1,
         });
-        let mut visited = HashSet::new();
-
-        while let Some(cell) = queue.pop() {
-            if cell.position.row == city.blocks.len() - 1
-                && cell.position.col == city.blocks[0].len() - 1
-            {
-                return Some(cell.cost);
-            }
-
-            for neighbour in cell.neighbours(&city) {
-                if visited.insert(neighbour.stateless()) {
-                    queue.push(neighbour);
+        struct Part2;
+        impl Target for Part2 {
+            fn is_target(&self, cell: &Cell, city: &City) -> bool {
+                if cell.moves < 4 {
+                    return false;
                 }
+
+                cell.position.row == city.blocks.len() - 1
+                    && cell.position.col == city.blocks[0].len() - 1
+            }
+        }
+        impl NeighboursVisitor for Part2 {
+            fn get_neighbours(&self, cell: &Cell, city: &City) -> Vec<Cell> {
+                let mut neighbours = vec![];
+
+                for direction in [
+                    Direction::Up,
+                    Direction::Down,
+                    Direction::Left,
+                    Direction::Right,
+                ] {
+                    if cell.moves >= 10 && cell.direction == direction {
+                        continue;
+                    }
+
+                    if cell.direction.opposite_of(&direction) {
+                        continue;
+                    }
+
+                    if cell.moves < 4 && cell.direction != direction {
+                        continue;
+                    }
+
+                    let next_position = match cell.position.move_in_direction(&direction, city) {
+                        Some(position) => position,
+                        None => continue,
+                    };
+                    let moves = if cell.direction == direction {
+                        cell.moves + 1
+                    } else {
+                        1
+                    };
+
+                    neighbours.push(Cell {
+                        cost: cell.cost + city.blocks[next_position.row][next_position.col],
+                        position: next_position,
+                        direction,
+                        moves,
+                    });
+                }
+
+                neighbours
             }
         }
 
-        unreachable!();
+        Some(solution(city, queue, Part2, Part2))
     }
 }
 
@@ -103,10 +231,18 @@ impl Direction {
 }
 
 #[derive(Hash, Eq, PartialEq)]
-struct Stateless {
+struct Vertex {
     position: Position,
     direction: Direction,
     moves: usize,
+}
+
+trait Target {
+    fn is_target(&self, cell: &Cell, city: &City) -> bool;
+}
+
+trait NeighboursVisitor {
+    fn get_neighbours(&self, cell: &Cell, city: &City) -> Vec<Cell>;
 }
 
 struct Cell {
@@ -117,50 +253,20 @@ struct Cell {
 }
 
 impl Cell {
-    fn stateless(&self) -> Stateless {
-        Stateless {
+    fn vertex(&self) -> Vertex {
+        Vertex {
             position: self.position,
             direction: self.direction,
             moves: self.moves,
         }
     }
 
-    fn neighbours(&self, city: &City) -> Vec<Cell> {
-        let mut neighbours = vec![];
+    fn neighbours(&self, city: &City, visitor: &impl NeighboursVisitor) -> Vec<Cell> {
+        visitor.get_neighbours(self, city)
+    }
 
-        for direction in [
-            Direction::Up,
-            Direction::Down,
-            Direction::Left,
-            Direction::Right,
-        ] {
-            if self.moves >= 3 && self.direction == direction {
-                continue;
-            }
-
-            if self.direction.opposite_of(&direction) {
-                continue;
-            }
-
-            let next_position = match self.position.move_in_direction(&direction, city) {
-                Some(position) => position,
-                None => continue,
-            };
-            let moves = if self.direction == direction {
-                self.moves + 1
-            } else {
-                1
-            };
-
-            neighbours.push(Cell {
-                cost: self.cost + city.blocks[next_position.row][next_position.col],
-                position: next_position,
-                direction,
-                moves,
-            });
-        }
-
-        neighbours
+    fn is_target(&self, city: &City, visitor: &impl Target) -> bool {
+        visitor.is_target(self, city)
     }
 }
 
@@ -244,5 +350,17 @@ mod tests {
         let result = Day17::solve_part1(INPUT).unwrap();
 
         assert_eq!(result, 16);
+    }
+
+    #[test]
+    fn example_02() {
+        const INPUT: &str = "111111111111
+999999999991
+999999999991
+999999999991
+999999999991
+";
+        let result = Day17::solve_part2(INPUT).unwrap();
+        assert_eq!(result, 71);
     }
 }

@@ -49,6 +49,9 @@ impl Day {
             Day::Day17 { part: Part::Part1 } => {
                 Box::new(day17::Day17::solve_part1(&input).unwrap())
             }
+            Day::Day17 { part: Part::Part2 } => {
+                Box::new(day17::Day17::solve_part2(&input).unwrap())
+            }
             _ => todo!(),
         }
     }
