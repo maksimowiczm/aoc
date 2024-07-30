@@ -2,19 +2,33 @@ use crate::solution::SolveDay;
 use clap::{Parser, Subcommand};
 use std::fmt::Display;
 
+#[allow(clippy::all)]
 mod day03;
+#[allow(clippy::all)]
 mod day04;
+#[allow(clippy::all)]
 mod day05;
+#[allow(clippy::all)]
 mod day06;
+#[allow(clippy::all)]
 mod day07;
+#[allow(clippy::all)]
 mod day08;
+#[allow(clippy::all)]
 mod day09;
+#[allow(clippy::all)]
 mod day10;
+#[allow(clippy::all)]
 mod day11;
+#[allow(clippy::all)]
 mod day12;
+#[allow(clippy::all)]
 mod day13;
+#[allow(clippy::all)]
 mod day14;
+#[allow(clippy::all)]
 mod day15;
+#[allow(clippy::all)]
 mod day16;
 mod day17;
 mod day18;
