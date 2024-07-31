@@ -1,18 +1,15 @@
 use std::collections::HashMap;
 
-#[allow(dead_code)]
 pub(super) struct System {
     pub workflows: HashMap<String, Workflow>,
     pub parts: Vec<Part>,
 }
 
-#[allow(dead_code)]
 pub(super) struct Workflow {
     pub rules: Vec<Rule>,
     pub otherwise: ReviewResult,
 }
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub(super) enum Category {
     Coolness,
@@ -21,7 +18,6 @@ pub(super) enum Category {
     Shininess,
 }
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub(super) enum Rule {
     LessThan {
@@ -36,7 +32,6 @@ pub(super) enum Rule {
     },
 }
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub(super) enum ReviewResult {
     Accept,
@@ -44,7 +39,6 @@ pub(super) enum ReviewResult {
     Pass(String),
 }
 
-#[allow(dead_code)]
 pub(super) struct Part {
     pub coolness: u64,
     pub musicality: u64,

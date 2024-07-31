@@ -2,11 +2,9 @@ use crate::day19::models::{Category, Part, ReviewResult, Rule, System, Workflow}
 use std::collections::HashMap;
 use std::iter::Peekable;
 
-pub(super) struct Lexer<I: Iterator<Item = char>> {
+pub(super) struct Lexer<I: Iterator> {
     input: Peekable<I>,
-    end: bool,
 }
-
 #[derive(Clone, PartialEq, Debug)]
 pub(super) enum Token {
     Identifier(String),
@@ -28,12 +26,26 @@ pub(super) enum Token {
 }
 impl<I: Iterator<Item = char>> Lexer<I> {
     pub(super) fn new(input: Peekable<I>) -> Self {
-        Self { input, end: false }
+        Self { input }
     }
 }
-impl<I: Iterator<Item = char>> Iterator for Lexer<I> {
-    type Item = Token;
 
+pub(super) struct LexerIntoIterator<I: Iterator> {
+    input: Peekable<I>,
+    end: bool,
+}
+impl<I: Iterator<Item = char>> IntoIterator for Lexer<I> {
+    type Item = Token;
+    type IntoIter = LexerIntoIterator<I>;
+    fn into_iter(self) -> Self::IntoIter {
+        LexerIntoIterator {
+            input: self.input,
+            end: false,
+        }
+    }
+}
+impl<I: Iterator<Item = char>> Iterator for LexerIntoIterator<I> {
+    type Item = Token;
     fn next(&mut self) -> Option<Self::Item> {
         if self.end {
             return None;
