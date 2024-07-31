@@ -33,6 +33,7 @@ mod day16;
 mod day17;
 mod day18;
 mod day19;
+mod day20;
 mod solution;
 
 #[derive(Parser)]
@@ -64,6 +65,10 @@ enum Day {
         #[clap(subcommand)]
         part: Part,
     },
+    Day20 {
+        #[clap(subcommand)]
+        part: Part,
+    },
 }
 
 impl Day {
@@ -87,6 +92,12 @@ impl Day {
             }
             Day::Day19 { part: Part::Part2 } => {
                 Box::new(day19::Day19::solve_part2(&input).unwrap())
+            }
+            Day::Day20 { part: Part::Part1 } => {
+                Box::new(day20::Day20::solve_part1(&input).unwrap())
+            }
+            Day::Day20 { part: Part::Part2 } => {
+                Box::new(day20::Day20::solve_part2(&input).unwrap())
             }
         }
     }
